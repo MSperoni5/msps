@@ -12,3 +12,6 @@ Simply copy `msps.lua` into your Lua project or modules folder:
 ```lua
 local ps = require("msps")
 ```
+
+# TODO
+- Implement a system for creating custom windows using XAML, developed with a WPF project in Visual Studio. This will allow for fully custom user interfaces.
