@@ -2,7 +2,13 @@
 local register_global_module_table = false
 local global_module_name = 'ps'
 
-local ps = { version = "msps 1.0" }
+local ps = { version = "msps 1.0.1" }
+
+-- This module is only supported on Windows systems
+local isUnix = package.config:sub(1, 1) == "/"
+if isUnix then
+    error("msps module is only supported on Windows systems.")
+end
 
 if register_global_module_table then
     _G[global_module_name] = ps
