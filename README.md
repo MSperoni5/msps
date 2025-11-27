@@ -1,4 +1,4 @@
-# msps.lua
+# msps
 A Lua library for Windows that provides simple functions for user interaction, such as message boxes, input dialogs, clipboard handling, and system notifications. Easy to integrate in Lua scripts with minimal setup.
 
 # Compatibility Notice
