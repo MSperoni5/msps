@@ -177,4 +177,56 @@ powershell -Command "Add-Type -AssemblyName Microsoft.VisualBasic; [Microsoft.Vi
 ]])
 end
 
+--- Displays a file open dialog using PowerShell and System.Windows.Forms
+--- @param title string The title of the file open dialog window. Must be non-empty.
+--- @param filter string The filter string for the file types to display. Must be non-empty.
+--- @param multiSelect boolean Whether to allow multiple file selection. Default is false.
+--- @return table|nil files A table of selected file paths if the user selects files, or `nil` if the user cancels.
+function ps.showDialog(title, filter, multiSelect)
+    if not title or type(title) ~= "string" then
+        error("Title must be a string")
+    end
+    if title == "" then
+        error("Title cannot be empty")
+    end
+
+    -- filter example: "Description|Extension;Extension2|Description2|Extension"
+    if not filter or type(filter) ~= "string" then
+        error("Filter must be a string")
+    end
+    if filter == "" then
+        error("Filter cannot be empty")
+    end
+
+    if multiSelect == nil then
+        multiSelect = false
+    end
+    if type(multiSelect) ~= "boolean" then
+        error("MultiSelect must be a boolean")
+    end
+
+    local command = string.format([[
+powershell -Command "Add-Type -AssemblyName System.Windows.Forms; $dialog = New-Object System.Windows.Forms.OpenFileDialog; $dialog.Title = '%s'; $dialog.Filter = '%s'; $dialog.Multiselect = $%s; $result = $dialog.ShowDialog(); if ($result -eq [System.Windows.Forms.DialogResult]::OK) { Write-Output ($dialog.FileNames -join '|'); exit 0 } else { exit 1 }"
+]], title, filter, multiSelect)
+
+    local handle = io.popen(command, "r")
+    if not handle then
+        error("Failed to execute PowerShell command")
+    end
+
+    local result = handle:read("*a")
+    local suc, exitcode, code = handle:close()
+
+    if code == 0 then
+        result = result:gsub("\r\n","")
+        local files = {}
+        for f in string.gmatch(result, "([^|]+)") do
+            table.insert(files, f)
+        end
+        return files
+    end
+
+    return nil
+end
+
 return ps

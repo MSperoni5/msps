@@ -23,3 +23,12 @@ print("Text has been copied to the clipboard.")
 -- Example usage of the beep function
 ps.beep()
 print("Beep sound has been played.")
+
+-- Example usage of the showDialog function
+local files = ps.showDialog("Select Files", "All files (*.*)|*.*", true)
+if files then
+    local temp = table.concat(files, ", ")
+    print("User selected files: " .. temp)
+else
+    print("User cancelled or closed the file dialog.")
+end
