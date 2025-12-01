@@ -182,7 +182,7 @@ end
 --- @param filter string The filter string for the file types to display. Must be non-empty.
 --- @param multiSelect boolean Whether to allow multiple file selection. Default is false.
 --- @return table|nil files A table of selected file paths if the user selects files, or `nil` if the user cancels.
-function ps.showDialog(title, filter, multiSelect)
+function ps.openFile(title, filter, multiSelect)
     if not title or type(title) ~= "string" then
         error("Title must be a string")
     end
@@ -190,7 +190,6 @@ function ps.showDialog(title, filter, multiSelect)
         error("Title cannot be empty")
     end
 
-    -- filter example: "Description|Extension;Extension2|Description2|Extension"
     if not filter or type(filter) ~= "string" then
         error("Filter must be a string")
     end
@@ -224,6 +223,144 @@ powershell -Command "Add-Type -AssemblyName System.Windows.Forms; $dialog = New-
             table.insert(files, f)
         end
         return files
+    end
+
+    return nil
+end
+
+function ps.folderBrowser(description, showNewFolderButton)
+    if not description then
+        description = ""
+    end
+    if type(description) ~= "string" then
+        error("Description must be a string")
+    end
+
+    if showNewFolderButton == nil then
+        showNewFolderButton = false
+    end
+    if type(showNewFolderButton) ~= "boolean" then
+        error("ShowNewFolderButton must be a boolean")
+    end
+
+    local command = string.format([[
+powershell -Command "Add-Type -AssemblyName System.Windows.Forms; $dialog = New-Object System.Windows.Forms.FolderBrowserDialog; $dialog.Description = \"%s\"; $dialog.ShowNewFolderButton = $%s; $result = $dialog.ShowDialog(); if ($result -eq [System.Windows.Forms.DialogResult]::OK) { Write-Output $dialog.SelectedPath; exit 0 } else { exit 1 }"
+]], description, showNewFolderButton)
+
+    local handle = io.popen(command, "r")
+    if not handle then
+        error("Failed to execute PowerShell command")
+    end
+
+    local result = handle:read("*a")
+    local suc, exitcode, code = handle:close()
+
+    if code == 0 then
+        result = result:gsub("\r", ""):gsub("\n", "")
+        return result
+    end
+
+    return nil
+end
+
+--- Displays a custom XAML-based dialog using PowerShell and WPF, and retrieves values from specified controls.
+--- @param xaml string The XAML string defining the UI layout. Must be a valid XAML string. Close button with Name "Close" is required.
+--- @param inputs table A table of control names (strings) whose values are to be retrieved.
+--- @return string|nil result A JSON string containing the values of the specified controls, or `nil` if the user cancels or closes the dialog.
+function ps.customXaml(xaml, inputs)
+    if not xaml or type(xaml) ~= "string" then
+        error("Invalid XAML input.")
+    end
+
+    if not inputs or type(inputs) ~= "table" then
+        error("Invalid inputs table.")
+    end
+    for key, value in pairs(inputs) do
+        if type(key) ~= "number" then
+            error("Invalid inputs table. Keys must be numeric indices.")
+        end
+        if type(value) ~= "string" then
+            error("Invalid inputs table. Values must be strings.")
+        end
+    end
+
+    local temp = ""
+    for i = 1, #inputs do
+        temp = temp .. '"' .. inputs[i] .. '"'
+        if i < #inputs then
+            temp = temp .. ", "
+        end
+    end
+    inputs = "@(" .. temp .. ")"
+        
+    local command = string.format([=[
+Add-Type -AssemblyName PresentationFramework
+$xaml = @'
+%s
+'@
+$ControlNames = %s
+$reader = New-Object System.Xml.XmlNodeReader ([xml]$xaml)
+$window = [Windows.Markup.XamlReader]::Load($reader)
+$Global:XamlResult = $null
+$closeButton = $window.FindName("Close")
+$closeButton.Add_Click({
+    $result = @{}
+    foreach ($name in $ControlNames) {
+        $control = $window.FindName($name)
+        if ($control) {
+            $value = switch ($control.GetType().Name) {
+                "TextBox" { $control.Text }
+                "PasswordBox" { $control.Password }
+                "DatePicker" { if ($control.SelectedDate -ne $null) { $control.SelectedDate.Ticks } else { $null } }
+                "CheckBox" { $control.IsChecked }
+                "ComboBox" { if ($control.SelectedItem -ne $null) { $control.SelectedItem.Content } else { $null } }
+                "ListBox" { $control.SelectedItems }
+                "Slider" { $control.Value }
+                "RadioButton" { $control.IsChecked }
+                "ProgressBar" { $control.Value }
+                default {
+                    if ($control.PSObject.Properties.Match("Text")) { $control.Text }
+                    elseif ($control.PSObject.Properties.Match("Content")) { $control.Content }
+                    elseif ($control.PSObject.Properties.Match("Value")) { $control.Value }
+                    else { $null }
+                }
+            }
+            $result[$name] = $value
+        }
+        else {
+            $result[$name] = $null
+        }
+    }
+    $Global:XamlResult = $result | ConvertTo-Json -Depth 100 -Compress | Out-String
+    $window.Close()
+})
+$window.ShowDialog() | Out-Null
+if ($Global:XamlResult) {
+    Write-Host $Global:XamlResult
+    exit 0
+} else {
+    exit 1
+}
+]=], xaml, inputs)
+
+    local tempFile = ".\\temp.ps1"
+    local f = assert(io.open(tempFile,"w"))
+    f:write(command)
+    f:close()
+
+    local handle = io.popen("powershell -ExecutionPolicy Bypass -File " .. tempFile)
+    if not handle then
+        os.remove(tempFile)
+        error("Failed to execute PowerShell script.")
+    end
+
+    local result = handle:read("*a")
+    local suc, exitcode, code = handle:close()
+
+    os.remove(tempFile)
+
+    if code == 0 then
+        return result
     end
 
     return nil
