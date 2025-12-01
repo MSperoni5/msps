@@ -180,7 +180,7 @@ end
 --- Displays a file open dialog using PowerShell and System.Windows.Forms
 --- @param title string The title of the file open dialog window. Must be non-empty.
 --- @param filter string The filter string for the file types to display. Must be non-empty.
---- @param multiSelect boolean Whether to allow multiple file selection. Default is false.
+--- @param multiSelect boolean|nil Whether to allow multiple file selection. Default is false.
 --- @return table|nil files A table of selected file paths if the user selects files, or `nil` if the user cancels.
 function ps.openFile(title, filter, multiSelect)
     if not title or type(title) ~= "string" then
@@ -230,7 +230,7 @@ end
 
 --- Displays a folder browser dialog using PowerShell and System.Windows.Forms
 --- @param description string The description text to display in the folder browser dialog. Must be a string.
---- @param showNewFolderButton boolean Whether to show the "New Folder" button. Default is false.
+--- @param showNewFolderButton boolean|nil Whether to show the "New Folder" button. Default is false.
 --- @return string|nil result The selected folder path if the user selects a folder, or `nil` if the user cancels.
 function ps.folderBrowser(description, showNewFolderButton)
     if not description then
