@@ -20,6 +20,6 @@ local ps = require("msps")
 | `ps.inputBox` | Displays an input box using PowerShell and Microsoft.VisualBasic. | `title` (string), `prompt` (string), `default` (string, optional) | `string` or `nil` |
 | `ps.setText` | Copies the given text to the system clipboard using PowerShell and System.Windows.Forms. | `text` (string) | `nil` |
 | `ps.beep` | Produces a beep sound using PowerShell and Microsoft.VisualBasic. | None | `nil` |
-| `ps.openFile` | Displays a file open dialog using PowerShell and System.Windows.Forms | `title` (string), `filter` (string), `multiSelect` (boolean) | `string` or `nil` |
-| `ps.folderBrowser` | Displays a folder browser dialog using PowerShell and System.Windows.Forms | `description` (string), `showNewFolderButton` (boolean) | `string` or `nil` |
+| `ps.openFile` | Displays a file open dialog using PowerShell and System.Windows.Forms | `title` (string), `filter` (string), `multiSelect` (boolean, optional) | `string` or `nil` |
+| `ps.folderBrowser` | Displays a folder browser dialog using PowerShell and System.Windows.Forms | `description` (string), `showNewFolderButton` (boolean, optional) | `string` or `nil` |
 | `ps.customXaml` | Displays a custom XAML-based dialog using PowerShell and WPF, and retrieves values from specified controls | `xaml` (string), `inputs` (table) | `string` or `nil` |
