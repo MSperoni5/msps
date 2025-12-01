@@ -228,6 +228,10 @@ powershell -Command "Add-Type -AssemblyName System.Windows.Forms; $dialog = New-
     return nil
 end
 
+--- Displays a folder browser dialog using PowerShell and System.Windows.Forms
+--- @param description string The description text to display in the folder browser dialog. Must be a string.
+--- @param showNewFolderButton boolean Whether to show the "New Folder" button. Default is false.
+--- @return string|nil result The selected folder path if the user selects a folder, or `nil` if the user cancels.
 function ps.folderBrowser(description, showNewFolderButton)
     if not description then
         description = ""
@@ -263,7 +267,7 @@ powershell -Command "Add-Type -AssemblyName System.Windows.Forms; $dialog = New-
     return nil
 end
 
---- Displays a custom XAML-based dialog using PowerShell and WPF, and retrieves values from specified controls.
+--- Displays a custom XAML-based dialog using PowerShell and WPF, and retrieves values from specified controls
 --- @param xaml string The XAML string defining the UI layout. Must be a valid XAML string. Close button with Name "Close" is required.
 --- @param inputs table A table of control names (strings) whose values are to be retrieved.
 --- @return string|nil result A JSON string containing the values of the specified controls, or `nil` if the user cancels or closes the dialog.
