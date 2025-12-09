@@ -24,7 +24,7 @@ local global_module_name = 'ps'
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local ps = { version = "msps 1.0.0" }
+local ps = { version = "msps 1.1.0" }
 
 -- This module is only supported on Windows systems
 local isUnix = package.config:sub(1, 1) == "/"
