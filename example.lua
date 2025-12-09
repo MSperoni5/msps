@@ -66,3 +66,6 @@ if customXamlResult then
 else
     print("User cancelled or closed the custom XAML dialog.")
 end
+
+-- Example usage of the notifyIcon function
+ps.notifyIcon("Notification title", "This is the notification text.", "Warning")

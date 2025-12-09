@@ -23,3 +23,4 @@ local ps = require("msps")
 | `ps.openFile` | Displays a file open dialog using PowerShell and System.Windows.Forms | `title` (string), `filter` (string), `multiSelect` (boolean, optional) | `string` or `nil` |
 | `ps.folderBrowser` | Displays a folder browser dialog using PowerShell and System.Windows.Forms | `description` (string), `showNewFolderButton` (boolean, optional) | `string` or `nil` |
 | `ps.customXaml` | Displays a custom XAML-based dialog using PowerShell and WPF, and retrieves values from specified controls | `xaml` (string), `inputs` (table) | `string` or `nil` |
+| `ps.notifyIcon` | Displays a notification icon with a balloon tip | `title` (string), `text` (string, optional), `icon` (string, optional) | `nil` |

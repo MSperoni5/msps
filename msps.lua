@@ -370,4 +370,37 @@ if ($Global:XamlResult) {
     return nil
 end
 
+--- Displays a notification icon with a balloon tip.
+--- @param title string The title of the notification. Must be non-empty.
+--- @param text string|nil The text of the notification. Optional.
+--- @param icon string|nil The icon of the notification. One of "None", "Info", "Warning", "Error". Optional.
+function ps.notifyIcon(title, text, icon)
+    if not title or type(title) ~= "string" then
+        error("Title must be a string")
+    end
+    if title == "" then
+        error("Title cannot be empty")
+    end
+
+    if not text or type(text) ~= "string" then
+        error("Text must be a string or nil")
+    end
+    if not text then
+        text = ""
+    end
+
+    if not icon or type(icon) ~= "string" or icon == "" then
+        icon = "None"
+    end
+    if icon ~= "None" and icon ~= "Info" and icon ~= "Warning" and icon ~= "Error" then
+        error("Icon must be one of: None, Info, Warning, Error")
+    end
+
+    local command = string.format([[
+powershell -Command "Add-Type -AssemblyName System.Windows.Forms; $balloon = New-Object System.Windows.Forms.NotifyIcon; $path = (Get-Process -Id $pid).Path; $balloon.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path); $balloon.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::%s; $balloon.BalloonTipText = '%s'; $balloon.BalloonTipTitle = '%s'; $balloon.Visible = $true; $balloon.ShowBalloonTip(0); Start-Sleep -Seconds 1; exit 0"
+]], icon, text, title)
+
+    os.execute(command)
+end
+
 return ps
